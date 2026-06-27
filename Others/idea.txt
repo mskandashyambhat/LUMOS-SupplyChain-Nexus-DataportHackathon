@@ -1,0 +1,764 @@
+SupplyChain Nexus Modules
+1. Data Upload & Integration
+•
+
+Upload all Excel datasets
+
+•
+
+Merge datasets automatically
+
+•
+
+Validate data
+
+•
+
+Detect missing values, duplicates and inconsistencies
+
+•
+
+Generate Data Quality Score
+
+2. Dashboard
+•
+
+Total Warehouses
+
+•
+
+Total Customers
+
+•
+
+Total Demand
+
+•
+
+Total Capacity
+
+•
+
+Warehouse Health Score
+
+•
+
+Optimization Score
+
+•
+
+Cost
+
+•
+
+Distance
+
+•
+
+Travel Time
+
+•
+
+Risk Index
+
+3. Warehouse Intelligence
+Capacity Utilization
+
+•
+
+Available Capacity
+
+•
+
+Assigned Demand
+
+•
+
+Warehouse Ef ciency
+
+•
+
+Warehouse Health Score
+
+•
+
+Warehouse Ranking
+
+fi
+
+•
+
+4. Customer & Demand Intelligence
+•
+
+Customer Distribution
+
+•
+
+Demand Analysis
+
+•
+
+K-Means Clustering
+
+•
+
+Demand Hotspots
+
+•
+
+Warehouse In uence Zones
+
+5. GIS Map
+•
+
+Warehouse Locations
+
+•
+
+Customer Locations
+
+•
+
+Optimized Routes
+
+•
+
+Heatmaps
+
+•
+
+Cluster Visualization
+
+•
+
+Route Visualization
+
+•
+
+Risk Visualization
+
+6. Multi-Objective Optimization Engine (Core)
+Using Google OR-Tools
+Optimize for:
+•
+
+Minimum Transportation Cost
+
+•
+
+Minimum Travel Distance
+
+•
+
+Minimum Travel Time
+
+•
+
+Balanced Warehouse Utilization
+
+•
+
+Capacity Constraints
+
+•
+
+Cold Storage Constraints
+
+fi
+
+fl
+
+7. Optimization Pro les
+
+•
+
+Cost Saver
+
+•
+
+Fast Delivery
+
+•
+
+Balanced
+
+•
+
+Sustainability
+
+•
+
+Emergency Mode
+
+•
+
+Custom Weights
+
+8. Scenario Analysis
+Simulate:
+•
+
+Warehouse Failure
+
+•
+
+Capacity Reduction
+
+•
+
+Demand Increase
+
+•
+
+Demand Decrease
+
+•
+
+Fuel Cost Increase
+
+•
+
+Route Closure
+
+•
+
+Vehicle Shortage
+
+•
+
+Cold Storage Failure
+
+Compare Before vs After.
+
+9. AI Recommendation Engine
+Generate recommendations like:
+•
+
+Shift customers
+
+•
+
+Change warehouse
+
+•
+
+Reduce overload
+
+•
+
+Improve utilization
+
+•
+
+Reduce transportation cost
+
+•
+
+Reduce travel time
+
+Each recommendation includes:
+
+•
+
+Reason
+
+•
+
+Con dence
+
+•
+
+Expected Savings
+
+•
+
+Business Impact
+
+10. Explainable AI
+Explain:
+•
+
+Why warehouse changed
+
+•
+
+Why recommendation generated
+
+•
+
+Expected improvement
+
+•
+
+Optimization logic
+
+11. Risk Detection
+Isolation Forest
+Detect:
+•
+
+Overloaded Warehouses
+
+•
+
+Cost Outliers
+
+•
+
+Route Anomalies
+
+•
+
+Capacity Issues
+
+•
+
+Demand Anomalies
+
+12. Warehouse Health Report
+
+fi
+
+For every warehouse:
+•
+
+Health Score
+
+•
+
+Utilization
+
+•
+
+Risk
+
+•
+
+Capacity
+
+•
+
+AI Suggestions
+
+•
+
+Performance Summary
+
+13. Executive Decision Center
+Business KPIs:
+•
+
+Cost
+
+•
+
+Distance
+
+•
+
+Time
+
+•
+
+Utilization
+
+•
+
+Savings
+
+•
+
+Carbon Emissions
+
+•
+
+Optimization Score
+
+•
+
+Supply Chain Health
+
+14. AI Insights
+Automatically generate:
+•
+
+Optimization Summary
+
+•
+
+Warehouse Warnings
+
+•
+
+Bottlenecks
+
+•
+
+Cost Saving Opportunities
+
+•
+
+Underutilized Warehouses
+
+15. Digital Twin
+Animated logistics simulation showing:
+•
+
+Warehouse Operations
+
+•
+
+Route Flow
+
+•
+
+Customer Allocation
+
+•
+
+Optimization Replay
+
+•
+
+Scenario Simulation
+
+16. Optimization Replay
+Show:
+•
+
+Initial Allocation
+
+•
+
+Optimization Steps
+
+•
+
+Final Allocation
+
+Animated replay with timeline.
+
+17. Analytics
+Charts:
+•
+
+Demand Distribution
+
+•
+
+Warehouse Utilization
+
+•
+
+Cost Analysis
+
+•
+
+Distance Analysis
+
+•
+
+Travel Time
+
+•
+
+Risk Distribution
+
+•
+
+Scenario Comparison
+
+18. Sustainability
+Calculate:
+•
+
+Fuel Consumption
+
+•
+
+CO₂ Emissions
+
+•
+
+Green Logistics Score
+
+•
+
+Distance Saved
+
+•
+
+Carbon Reduction
+
+19. AI Decision Copilot
+Ask questions like:
+
+•
+
+Which warehouse is overloaded?
+
+•
+
+Why did optimization choose Warehouse W3?
+
+•
+
+Which scenario is best?
+
+•
+
+How much cost was saved?
+
+20. Smart Constraint Builder
+Users can enable or disable:
+•
+
+Capacity Constraints
+
+•
+
+Budget Constraints
+
+•
+
+Travel Time Limits
+
+•
+
+Cold Storage Limits
+
+•
+
+Distance Limits
+
+21. Noti cations
+Alerts:
+•
+
+High Utilization
+
+•
+
+Route Issues
+
+•
+
+Optimization Complete
+
+•
+
+Data Quality Issues
+
+•
+
+High Risk Warehouses
+
+22. Reports
+
+fi
+
+Generate:
+•
+
+Executive Report
+
+•
+
+Optimization Report
+
+•
+
+Warehouse Report
+
+•
+
+Risk Report
+
+•
+
+Scenario Report
+
+•
+
+Sustainability Report
+
+Export:
+•
+
+PDF
+
+•
+
+Excel
+
+•
+
+CSV
+
+23. Mission Control Dashboard
+A full-screen live dashboard showing:
+•
+
+KPIs
+
+•
+
+Maps
+
+•
+
+Routes
+
+•
+
+Digital Twin
+
+•
+
+Alerts
+
+•
+
+Optimization Status
+
+Unique Features (USP)
+•
+
+Warehouse Health Score
+
+•
+
+Optimization Replay
+
+•
+
+Digital Twin Visualization
+
+•
+
+AI Decision Copilot
+
+•
+
+Executive Decision Center
+
+•
+
+Scenario Laboratory
+
+•
+
+Before vs After Comparison
+
+•
+
+Green Logistics Dashboard
+
+•
+
+Benchmark Different Optimization Strategies
+
+•
+
+Explainable AI Recommendations
+
+•
+
+Risk Propagation Visualization
+
+•
+
+Smart Constraint Builder
+
+•
+
+Interactive KPI Wall
+
+•
+
+Professional Enterprise Dashboard
+
+AI / Optimization Models Used
+Module
+
+Model
+
+Customer Clustering
+
+K-Means
+
+Risk Detection
+
+Isolation Forest
+
+Route Optimization
+
+Google OR-Tools
+
+Network Analysis
+
+NetworkX
+
+GIS Processing
+Recommendation
+Engine
+
+GeoPandas
+Rule-based + Optimization
+Results
+
+Scenario Analysis
+
+OR-Tools Re-optimization
+
+Overall Work ow
+
+fl
+
+Upload Dataset
+│
+▼
+Data Validation & Cleaning
+│
+▼
+Warehouse & Customer Analysis
+│
+▼
+Demand Clustering (K-Means)
+│
+▼
+Warehouse Health Calculation
+│
+▼
+Run Multi-Objective Optimization (OR-Tools)
+│
+▼
+Generate Optimized Warehouse Assignments
+│
+▼
+Risk Detection (Isolation Forest)
+│
+▼
+
+AI Recommendations & Explainable Insights
+│
+▼
+Scenario Simulation & Re-optimization
+│
+▼
+Interactive Maps & Digital Twin
+│
+▼
+Executive Dashboard & Reports
+
+Final Goal
+
+fi
+
+SupplyChain Nexus acts as an AI-assisted supply chain decision support platform. It transforms
+raw logistics data into optimized warehouse allocations, scenario-based planning, explainable
+recommendations, and interactive visualizations, enabling organizations to make faster, data-driven
+decisions that reduce costs, improve ef ciency, and increase supply chain resilience.
+
+

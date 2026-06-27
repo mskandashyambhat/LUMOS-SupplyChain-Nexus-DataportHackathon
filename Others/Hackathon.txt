@@ -1,0 +1,471 @@
+SupplyChain Nexus: An Intelligent Supply Chain Risk Analytics and Decision Support
+Platform
+
+Problem Statement
+Modern supply chains require balancing warehouse capacities, transportation costs, delivery times,
+and regional demand while minimizing operational risks. Existing analytical tools primarily provide
+descriptive insights through dashboards, requiring managers to manually interpret data and make
+decisions. As supply networks grow in complexity, identifying bottlenecks and determining the
+most ef cient distribution strategy becomes increasingly challenging.
+
+Abstract
+SupplyChain Nexus is an intelligent Supply Chain Risk Analytics and Decision Support Platform
+that assists organizations in analyzing warehouse utilization, identifying logistics bottlenecks, and
+optimizing distribution strategies using operational supply chain data. The platform integrates
+warehouse capacities, regional demand, transportation costs, travel times, distance matrices, and
+geographical information to provide a comprehensive understanding of the supply chain network.
+The system computes warehouse utilization, evaluates operational risk based on capacity and
+demand distribution, and identi es inef cient logistics patterns. A multi-objective optimization
+engine recommends improved warehouse allocations by minimizing transportation cost and
+delivery time while balancing warehouse utilization across the network.
+To support strategic planning, the platform incorporates a Scenario Analysis Engine that allows
+decision-makers to evaluate the effects of warehouse outages, capacity reductions, and demand
+uctuations. For each simulated scenario, the system recalculates warehouse assignments, logistics
+costs, delivery times, and utilization levels, enabling organizations to proactively assess risks and
+compare alternative distribution strategies.
+The platform presents these insights through an interactive geospatial dashboard featuring
+warehouse locations, optimized transportation routes, utilization heatmaps, operational alerts, and
+AI-generated recommendations. By combining analytics, optimization, simulation, and
+visualization into a uni ed platform, SupplyChain Nexus enables organizations to make faster, datadriven decisions that improve operational ef ciency, reduce logistics costs, and strengthen supply
+chain resilience.
+
+Objectives
+Identify operational bottlenecks and capacity constraints.
+
+fi
+
+•
+
+fi
+
+Analyze warehouse utilization across the network.
+
+fi
+
+•
+
+fi
+
+fi
+
+fl
+
+Project Title
+
+•
+
+Optimize warehouse allocation based on multiple objectives.
+
+•
+
+Minimize transportation cost and delivery time.
+
+•
+
+Improve warehouse resource utilization.
+
+•
+
+Simulate operational scenarios for proactive planning.
+
+•
+
+Assist decision-makers with intelligent recommendations.
+
+Proposed Work ow
+Input Datasets
+│
+▼
+Data Cleaning & Validation
+│
+▼
+Supply Chain Analytics
+│
+├───────────────┐
+▼
+▼
+Risk Assessment
+Optimization Engine
+│
+│
+└───────┬───────┘
+▼
+Scenario Analysis
+│
+▼
+Interactive Dashboard
+│
+▼
+Decision Recommendations
+
+Modules
+Module 1: Data Integration
+Integrates all provided datasets:
+Demand
+
+•
+
+Warehouse Capacity
+
+•
+
+Transportation Cost
+
+fl
+
+•
+
+•
+
+Distance Matrix
+
+•
+
+Travel Time
+
+•
+
+Geographic Coordinates
+
+Module 2: Warehouse Utilization Analysis
+Calculates
+•
+
+Current utilization
+
+•
+
+Available capacity
+
+•
+
+Capacity distribution
+
+•
+
+Warehouse occupancy
+
+Output
+•
+
+Utilization charts
+
+•
+
+Capacity comparison
+
+•
+
+Warehouse status
+
+Module 3: Supply Chain Risk Assessment
+Computes warehouse risk based on
+•
+
+Capacity utilization
+
+•
+
+Distance from demand centers
+
+•
+
+Transportation cost
+
+•
+
+Delivery time
+
+Each warehouse receives a
+•
+
+Low Risk
+
+•
+
+Medium Risk
+
+•
+
+High Risk
+
+classi cation.
+
+fi
+
+Module 4: Multi-Objective Optimization Engine
+
+Optimizes warehouse allocation considering
+•
+
+Transportation Cost
+
+•
+
+Delivery Time
+
+•
+
+Warehouse Capacity
+
+The system recommends
+•
+
+Best warehouse
+
+•
+
+Best allocation
+
+•
+
+Balanced resource utilization
+
+Module 5: Scenario Analysis Engine
+Allows users to simulate
+
+Scenario 1
+Increase regional demand
+System recalculates
+•
+
+warehouse utilization
+
+•
+
+logistics cost
+
+•
+
+delivery time
+
+Scenario 2
+Warehouse capacity reduction
+System identi es
+•
+
+overloaded warehouses
+
+•
+
+alternate warehouse allocation
+
+Scenario 3
+Warehouse outage
+
+fi
+
+fi
+
+System redistributes demand to available warehouses and compares the updated network with the
+original con guration.
+
+Module 6: Geospatial Visualization
+Interactive map displaying
+•
+
+Warehouse locations
+
+•
+
+Demand regions
+
+•
+
+Transportation routes
+
+•
+
+Optimized routes
+
+•
+
+Risk heatmaps
+
+Module 7: Recommendation Engine
+Automatically suggests
+•
+
+Best warehouse allocation
+
+•
+
+Alternate warehouse
+
+•
+
+Capacity balancing
+
+•
+
+Logistics improvements
+
+Example
+
+Recommendation
+Warehouse W3 is operating at 95% utilization.
+Redistribute Region R7 to Warehouse W5.
+Expected Benefits
+Transportation Cost ↓ 11%
+Warehouse Utilization ↓ 18%
+Delivery Time ↓ 9%
+
+Module 8: Comparative Analytics
+Displays
+
+Current Network
+
+•
+
+Total Cost
+
+•
+
+Average Delivery Time
+
+•
+
+Warehouse Utilization
+
+Optimized Network
+•
+
+Total Cost
+
+•
+
+Average Delivery Time
+
+•
+
+Warehouse Utilization
+
+Shows measurable improvements.
+
+Technologies
+Frontend
+•
+
+React
+
+•
+
+Tailwind CSS
+
+•
+
+Lea et
+
+•
+
+Plotly
+
+Backend
+•
+
+FastAPI
+
+Optimization
+•
+
+Google OR-Tools
+
+•
+
+PuLP (Linear Programming)
+
+Data Processing
+•
+
+Pandas
+
+•
+
+NumPy
+
+Database
+
+fl
+
+•
+
+SQLite
+
+Expected Outcomes
+•
+
+Reduced transportation cost
+
+•
+
+Improved warehouse utilization
+
+•
+
+Reduced delivery time
+
+•
+
+Better warehouse allocation
+
+•
+
+Faster operational decision-making
+
+•
+
+Enhanced supply chain resilience
+
+Novelty
+Unlike traditional dashboards that only visualize operational data, SupplyChain Nexus combines
+risk assessment, multi-objective optimization, scenario analysis, and decision
+recommendations into a single platform. The system not only identi es inef ciencies but also
+recommends optimized warehouse allocations and allows decision-makers to evaluate alternative
+logistics strategies before implementation.
+
+Why this project is feasible
+Every major component is directly supported by your datasets:
+Feature
+Warehouse Utilization
+
+Dataset Used
+Capacity + Demand
+
+Transportation Cost Analysis Cost
+Delivery Time Analysis
+
+Time
+
+Route Analysis
+
+Distance + GeoLocations
+
+Warehouse Allocation
+Multi-Objective
+Optimization
+
+Capacity + Demand + Cost
+
+Risk Assessment
+
+Capacity + Demand + Time + Cost
+Modi ed values from the provided
+datasets
+
+Scenario Analysis
+Interactive Map
+
+Capacity + Cost + Time + Distance
+
+GeoLocations
+
+fi
+
+fi
+
+fi
+
+This ensures the project remains fully aligned with the hackathon constraints while demonstrating a
+complete engineering solution rather than just a visualization dashboard.
+
+
