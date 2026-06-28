@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from html import escape
 from pathlib import Path
 from typing import Any
 
@@ -238,11 +239,11 @@ def solve_allocation(features: pd.DataFrame, objective_weights: dict[str, float]
     if features.empty:
         return features
     regions  = features["region"].tolist()
-    demand   = features["total_demand"].to_numpy(dtype=float)
-    capacity = features["total_capacity"].to_numpy(dtype=float)
-    cost     = features["avg_cost"].to_numpy(dtype=float)
-    distance = features["avg_distance"].to_numpy(dtype=float)
-    time     = features["avg_time"].to_numpy(dtype=float)
+    demand   = features["total_demand"].to_numpy(dtype=float).copy()
+    capacity = features["total_capacity"].to_numpy(dtype=float).copy()
+    cost     = features["avg_cost"].to_numpy(dtype=float).copy()
+    distance = features["avg_distance"].to_numpy(dtype=float).copy()
+    time     = features["avg_time"].to_numpy(dtype=float).copy()
 
     if scenario.get("demand_multiplier", 1.0) != 1.0:
         demand = demand * float(scenario["demand_multiplier"])
@@ -437,9 +438,93 @@ section[data-testid="stSidebar"] {
     margin: 1.4rem 0 .7rem 0;
 }
 
+.page-badge {
+    display:inline-block;
+    margin: .2rem 0 1rem 0;
+    padding: .42rem .75rem;
+    border-radius: 999px;
+    background: rgba(59,130,246,.16);
+    border: 1px solid rgba(110,168,254,.22);
+    color: #dcecff;
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
 /* ── glass card ── */
 .glass { background:rgba(255,255,255,.032); border:1px solid rgba(255,255,255,.075);
          border-radius:20px; padding:1.1rem 1.15rem; backdrop-filter:blur(10px); }
+
+/* ── panel card ── */
+.panel-card {
+    background: linear-gradient(145deg, rgba(255,255,255,.045), rgba(255,255,255,.025));
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 20px;
+    padding: .85rem;
+    box-shadow: 0 16px 45px rgba(0,0,0,.18);
+    margin-bottom: 1rem;
+}
+
+/* ── control surfaces ── */
+div[data-testid="stSidebar"] .stSelectbox > div > div,
+div[data-testid="stSidebar"] .stSlider > div,
+div[data-testid="stSidebar"] .stTextInput > div > div,
+div[data-testid="stSidebar"] .stNumberInput > div > div {
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.09);
+    border-radius: 14px;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
+}
+
+div[data-testid="stSidebar"] .stCheckbox > label,
+div[data-testid="stSidebar"] .stRadio > label {
+    color: #cfe0ff;
+}
+
+div[data-testid="stSidebar"] .stDownloadButton > button,
+div[data-testid="stSidebar"] button[kind="secondary"],
+button[kind="primary"] {
+    border-radius: 999px;
+    border: 1px solid rgba(110,168,254,.25);
+    background: linear-gradient(135deg, rgba(59,130,246,.18), rgba(34,197,94,.14));
+    color: #eff6ff;
+    box-shadow: 0 14px 30px rgba(21,101,233,.08);
+}
+
+div[data-testid="stDataFrame"] {
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,.08);
+    background: rgba(4,12,22,.75);
+}
+
+div[data-testid="stDataFrame"] thead th {
+    background: rgba(110,168,254,.16);
+    color: #e2eafc;
+}
+
+div[data-testid="stDataFrame"] tbody tr:hover {
+    background: rgba(255,255,255,.04);
+}
+
+.panel-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.panel-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,.05), rgba(255,255,255,0));
+    pointer-events: none;
+}
+
+.panel-card > div {
+    position: relative;
+    z-index: 1;
+}
 
 /* ── rec card ── */
 .rec-card {
@@ -503,6 +588,12 @@ DARK_LAYOUT = dict(
 )
 
 
+def render_chart_card(fig: go.Figure | px.scatter | px.bar | px.line) -> None:
+    st.markdown('<div class="panel-card">', unsafe_allow_html=True)
+    st.plotly_chart(fig, use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+
 def gauge_chart(value: float, label: str, color: str) -> go.Figure:
     fig = go.Figure(go.Indicator(
         mode="gauge+number",
@@ -527,9 +618,10 @@ def gauge_chart(value: float, label: str, color: str) -> go.Figure:
     return fig
 
 
-def build_geo_map(scored: pd.DataFrame, optimized: pd.DataFrame) -> go.Figure:
-    """Interactive scatter-map of warehouse locations sized by demand, colored by risk."""
-    lats, lons, labels, risks, sizes, colors, hovers = [], [], [], [], [], [], []
+def build_geo_map(scored: pd.DataFrame, optimized: pd.DataFrame, focus_region: str | None = None) -> go.Figure:
+    """Interactive scatter-map of warehouse locations sized by demand, colored by risk.
+    If `focus_region` is provided, center the map on that region and visually highlight it."""
+    lats, lons, labels, risks, sizes, colors, hovers, line_widths = [], [], [], [], [], [], [], []
     for _, row in scored.iterrows():
         region = row["region"]
         coords = REGION_COORDS.get(region, {"lat": 41.0, "lon": 39.0, "color": "#6ea8fe"})
@@ -549,6 +641,22 @@ def build_geo_map(scored: pd.DataFrame, optimized: pd.DataFrame) -> go.Figure:
             f"Post-opt utilization: {util_post*100:.1f}%<br>"
             f"Total demand: {row['total_demand']:.0f}"
         )
+        # default outline width
+        line_widths.append(1.5)
+
+    # If focus provided, increase marker size/outline for that point and center map
+    center = dict(lat=41.0, lon=39.2)
+    proj_scale = 12
+    if focus_region:
+        fc = REGION_COORDS.get(focus_region)
+        if fc:
+            center = dict(lat=fc['lat'], lon=fc['lon'])
+            proj_scale = 18
+        # bump visual emphasis on focused marker
+        for i, lab in enumerate(labels):
+            if lab == focus_region:
+                sizes[i] = max(sizes[i], sizes[i] * 1.6)
+                line_widths[i] = 3.5
 
     fig = go.Figure()
     fig.add_trace(go.Scattergeo(
@@ -557,22 +665,24 @@ def build_geo_map(scored: pd.DataFrame, optimized: pd.DataFrame) -> go.Figure:
         mode="markers+text",
         textposition="top center",
         textfont=dict(size=11, color="#eaf2ff"),
-        marker=dict(
+            marker=dict(
             size=sizes,
             color=risks,
             colorscale="RdYlGn_r",
             cmin=0, cmax=100,
-            colorbar=dict(title="Risk index", tickfont=dict(color="#84a7df"),
-                          titlefont=dict(color="#84a7df")),
-            line=dict(color="rgba(255,255,255,.3)", width=1.5),
+            colorbar=dict(
+                title="Risk index",
+                tickfont=dict(color="#84a7df"),
+            ),
+            line=dict(color=["rgba(255,255,255,.3)" for _ in labels], width=line_widths),
             opacity=0.88,
         ),
     ))
     fig.update_layout(
         geo=dict(
             scope="europe",
-            center=dict(lat=41.0, lon=39.2),
-            projection_scale=12,
+            center=center,
+            projection_scale=proj_scale,
             showland=True, landcolor="rgba(20,35,60,1)",
             showocean=True, oceancolor="rgba(6,14,28,1)",
             showcoastlines=True, coastlinecolor="rgba(80,120,180,.4)",
@@ -611,6 +721,30 @@ def waterfall_comparison(comparison: pd.DataFrame) -> go.Figure:
 
 # ─── Sidebar ─────────────────────────────────────────────────────────────────
 
+def normalize_page_name(page_name: str) -> str:
+    page = (page_name or "").strip()
+    if "  " in page:
+        page = page.split("  ", 1)[-1].strip()
+    return page.lower()
+
+
+def get_page_title(page_name: str) -> str:
+    name = normalize_page_name(page_name)
+    if name.startswith("overview"):
+        return "Overview"
+    if name.startswith("scenario"):
+        return "Scenario Lab"
+    if name.startswith("ai"):
+        return "AI Insights"
+    if name.startswith("gis") or name.startswith("map"):
+        return "GIS Map"
+    if name.startswith("sustainability"):
+        return "Sustainability"
+    if name.startswith("export"):
+        return "Export"
+    return "Overview"
+
+
 def render_sidebar() -> tuple[str, str, dict[str, float], bool, str]:
     with st.sidebar:
         st.markdown("""
@@ -623,6 +757,7 @@ def render_sidebar() -> tuple[str, str, dict[str, float], bool, str]:
         """, unsafe_allow_html=True)
 
         st.markdown("**Navigation**")
+        st.caption("Choose a workspace to explore the network")
         page = st.radio("", [
             "🏠  Overview",
             "🧪  Scenario Lab",
@@ -630,7 +765,7 @@ def render_sidebar() -> tuple[str, str, dict[str, float], bool, str]:
             "🗺️  GIS Map",
             "♻️  Sustainability",
             "📦  Export",
-        ], label_visibility="collapsed")
+        ], key="active_page", label_visibility="collapsed")
 
         st.markdown("<hr style='border-color:rgba(110,168,254,.12);margin:.6rem 0;'/>",
                     unsafe_allow_html=True)
@@ -669,7 +804,7 @@ def render_sidebar() -> tuple[str, str, dict[str, float], bool, str]:
         ))
         wpie.update_layout(height=170, showlegend=False, margin=dict(l=5,r=5,t=5,b=5),
                            paper_bgcolor="rgba(0,0,0,0)")
-        st.plotly_chart(wpie, use_container_width=True)
+        render_chart_card(wpie)
 
     return page, scenario_name, weights, presentation_mode, focus_region
 
@@ -682,6 +817,9 @@ def render_hero_and_kpis(scored: pd.DataFrame, optimized: pd.DataFrame,
     with col_hero:
         st.markdown("""
         <div class="hero-shell">
+          <div style="font-size:.74rem;color:#6ea8fe;text-transform:uppercase;letter-spacing:.18em;margin-bottom:.45rem;">
+            Executive command center
+          </div>
           <div class="hero-title">SupplyChain Nexus</div>
           <div class="hero-copy">
             Multi-objective warehouse optimization, scenario stress testing, and
@@ -779,9 +917,8 @@ def page_overview(scored: pd.DataFrame, optimized: pd.DataFrame,
         color = "#22c55e" if row["warehouse_health_score"] > 65 else \
                 "#f59e0b" if row["warehouse_health_score"] > 40 else "#ef4444"
         with col:
-            st.plotly_chart(gauge_chart(row["warehouse_health_score"],
-                                        row["region"], color),
-                            use_container_width=True)
+            render_chart_card(gauge_chart(row["warehouse_health_score"],
+                                      row["region"], color))
 
     st.markdown('<div class="section-header">Logistics pressure & risk</div>',
                 unsafe_allow_html=True)
@@ -798,7 +935,7 @@ def page_overview(scored: pd.DataFrame, optimized: pd.DataFrame,
         fig.update_traces(textposition="top center",
                           textfont=dict(color="#eaf2ff", size=11))
         fig.update_layout(**DARK_LAYOUT)
-        st.plotly_chart(fig, use_container_width=True)
+        render_chart_card(fig)
 
     with right:
         bar = optimized.sort_values("warehouse_health_score", ascending=False).copy()
@@ -811,7 +948,7 @@ def page_overview(scored: pd.DataFrame, optimized: pd.DataFrame,
             labels={"value": "Utilization ratio", "variable": ""},
         )
         fig2.update_layout(**DARK_LAYOUT)
-        st.plotly_chart(fig2, use_container_width=True)
+        render_chart_card(fig2)
 
     st.markdown('<div class="section-header">Demand composition</div>',
                 unsafe_allow_html=True)
@@ -826,7 +963,7 @@ def page_overview(scored: pd.DataFrame, optimized: pd.DataFrame,
                      barmode="stack", title="Demand composition by type and region",
                      color_discrete_sequence=["#6ea8fe","#2dd4bf","#f59e0b","#f97316","#a78bfa"])
     fig_dem.update_layout(**DARK_LAYOUT)
-    st.plotly_chart(fig_dem, use_container_width=True)
+    render_chart_card(fig_dem)
 
     if not comparison.empty:
         st.markdown('<div class="section-header">Scenario delta</div>',
@@ -844,7 +981,7 @@ def page_overview(scored: pd.DataFrame, optimized: pd.DataFrame,
         delta_fig.add_hline(y=0, line_dash="dot", line_color="rgba(255,255,255,.3)")
         delta_fig.update_layout(**DARK_LAYOUT, barmode="group",
                                 title="Health & risk delta: scenario vs baseline")
-        st.plotly_chart(delta_fig, use_container_width=True)
+        render_chart_card(delta_fig)
 
 # ─── Scenario Lab page ───────────────────────────────────────────────────────
 
@@ -864,7 +1001,18 @@ def page_scenario(scored: pd.DataFrame, optimized: pd.DataFrame,
                  "service_level", "shortage", "objective_score"]
     display_df = optimized[[c for c in cols_show if c in optimized.columns]].copy()
     display_df["service_level"] = (display_df["service_level"] * 100).round(1).astype(str) + "%"
-    st.dataframe(display_df, use_container_width=True, hide_index=True)
+    # If a focus region is selected, move it to the top and visually highlight it
+    if focus_region in display_df["region"].values:
+        focus_row = display_df[display_df["region"] == focus_region]
+        other = display_df[display_df["region"] != focus_region]
+        display_df = pd.concat([focus_row, other], ignore_index=True)
+        try:
+            styled = display_df.style.apply(lambda r: ['background-color: rgba(45,212,191,0.08)' if r['region']==focus_region else '' for _ in r], axis=1)
+            st.dataframe(styled, use_container_width=True, hide_index=True)
+        except Exception:
+            st.dataframe(display_df, use_container_width=True, hide_index=True)
+    else:
+        st.dataframe(display_df, use_container_width=True, hide_index=True)
 
     st.markdown('<div class="section-header">Visual comparison</div>',
                 unsafe_allow_html=True)
@@ -877,7 +1025,7 @@ def page_scenario(scored: pd.DataFrame, optimized: pd.DataFrame,
                       title="Demand vs assigned (post-optimization)",
                       labels={"value": "Units", "variable": ""})
         fig1.update_layout(**DARK_LAYOUT)
-        st.plotly_chart(fig1, use_container_width=True)
+        render_chart_card(fig1)
 
     with c2:
         fig2 = px.line(optimized, x="region",
@@ -886,7 +1034,7 @@ def page_scenario(scored: pd.DataFrame, optimized: pd.DataFrame,
                        color_discrete_sequence=["#22c55e", "#ef4444"],
                        title="Operational health vs risk index")
         fig2.update_layout(**DARK_LAYOUT)
-        st.plotly_chart(fig2, use_container_width=True)
+        render_chart_card(fig2)
 
     # service level radial
     st.markdown('<div class="section-header">Service level by warehouse</div>',
@@ -908,12 +1056,12 @@ def page_scenario(scored: pd.DataFrame, optimized: pd.DataFrame,
         title=dict(text="Service level by warehouse", font=dict(color="#c8deff")),
         margin=dict(l=60, r=60, t=50, b=20),
     )
-    st.plotly_chart(fig_radar, use_container_width=True)
+    render_chart_card(fig_radar)
 
     if not comparison.empty:
         st.markdown('<div class="section-header">Baseline vs scenario — full comparison</div>',
                     unsafe_allow_html=True)
-        st.plotly_chart(waterfall_comparison(comparison), use_container_width=True)
+        render_chart_card(waterfall_comparison(comparison))
 
     st.markdown('<div class="section-header">Decision text</div>',
                 unsafe_allow_html=True)
@@ -978,7 +1126,7 @@ def page_ai_insights(scored: pd.DataFrame, optimized: pd.DataFrame,
             labels={"pca_x": "PC 1", "pca_y": "PC 2"},
         )
         fig3.update_layout(**DARK_LAYOUT)
-        st.plotly_chart(fig3, use_container_width=True)
+        render_chart_card(fig3)
 
     with ml_c2:
         risk_sorted = scored.sort_values("risk_index", ascending=False)
@@ -997,7 +1145,7 @@ def page_ai_insights(scored: pd.DataFrame, optimized: pd.DataFrame,
                            annotation_text="Risk threshold", annotation_font_color="#ef4444")
         fig_risk.update_layout(**DARK_LAYOUT, barmode="group",
                                title="Risk index vs health score")
-        st.plotly_chart(fig_risk, use_container_width=True)
+        render_chart_card(fig_risk)
 
     st.markdown('<div class="section-header">Predicted vs actual utilization</div>',
                 unsafe_allow_html=True)
@@ -1017,7 +1165,7 @@ def page_ai_insights(scored: pd.DataFrame, optimized: pd.DataFrame,
                     tickfont=dict(color="#f59e0b"), title="Gap"),
         legend=dict(orientation="h", y=-0.15),
     )
-    st.plotly_chart(fig_pred, use_container_width=True)
+    render_chart_card(fig_pred)
 
     st.markdown('<div class="section-header">Explainable AI</div>',
                 unsafe_allow_html=True)
@@ -1040,10 +1188,10 @@ def page_ai_insights(scored: pd.DataFrame, optimized: pd.DataFrame,
 
 # ─── GIS Map page ────────────────────────────────────────────────────────────
 
-def page_gis(scored: pd.DataFrame, optimized: pd.DataFrame) -> None:
+def page_gis(scored: pd.DataFrame, optimized: pd.DataFrame, focus_region: str) -> None:
     st.markdown('<div class="section-header">Warehouse network map</div>',
                 unsafe_allow_html=True)
-    st.plotly_chart(build_geo_map(scored, optimized), use_container_width=True)
+    render_chart_card(build_geo_map(scored, optimized, focus_region))
     st.markdown('<div class="map-label">Bubble size = total demand · Color = risk index '
                 '(green → low risk, red → high risk)</div>', unsafe_allow_html=True)
 
@@ -1082,7 +1230,7 @@ def page_gis(scored: pd.DataFrame, optimized: pd.DataFrame) -> None:
         text_auto=".1f",
     )
     fig_heat.update_layout(**DARK_LAYOUT, height=280)
-    st.plotly_chart(fig_heat, use_container_width=True)
+    render_chart_card(fig_heat)
 
 # ─── Sustainability page ─────────────────────────────────────────────────────
 
@@ -1110,7 +1258,7 @@ def page_sustainability(features: pd.DataFrame, optimized: pd.DataFrame) -> None
     gs_col, gs_text = st.columns([1, 2])
     with gs_col:
         fig_gs = gauge_chart(sus["green_score"], "Green logistics score", "#22c55e")
-        st.plotly_chart(fig_gs, use_container_width=True)
+        render_chart_card(fig_gs)
     with gs_text:
         st.markdown(f"""
         <div class="glass" style="height:100%;padding-top:1.5rem;">
@@ -1136,7 +1284,7 @@ def page_sustainability(features: pd.DataFrame, optimized: pd.DataFrame) -> None
                      title="Estimated CO₂ by region (baseline)",
                      labels={"est_co2_kg": "CO₂ (kg)", "region": "Region"})
     fig_co2.update_layout(**DARK_LAYOUT)
-    st.plotly_chart(fig_co2, use_container_width=True)
+    render_chart_card(fig_co2)
 
 # ─── Export page ─────────────────────────────────────────────────────────────
 
@@ -1195,9 +1343,91 @@ def page_export(scored: pd.DataFrame, optimized: pd.DataFrame,
     report_lines += ["", "=" * 60, "Generated by SupplyChain Nexus", "=" * 60]
     report_payload = "\n".join(report_lines).encode("utf-8")
 
+    # build interactive chart exports used inside the HTML report
+    risk_fig = px.scatter(scored, x="avg_distance", y="avg_time",
+                          size="total_demand", color="risk_index",
+                          hover_name="region", color_continuous_scale="Turbo")
+    risk_fig.update_layout(**DARK_LAYOUT)
+    risk_html = risk_fig.to_html(include_plotlyjs="cdn")
+
+    geo_fig = build_geo_map(scored, optimized, focus_region)
+    geo_html = geo_fig.to_html(include_plotlyjs="cdn")
+
+    # structured HTML report
+    report_html = f"""
+    <html><head>
+      <meta charset="utf-8">
+      <title>SupplyChain Nexus — Executive Report</title>
+      <style>
+        body{{background:#07111f;color:#eaf4ff;font-family:Inter,Arial,Helvetica,sans-serif;padding:20px;}}
+        .report-shell{{max-width:980px;margin:0 auto;background:linear-gradient(180deg,#07111f,#05101a);border-radius:12px;padding:20px;border:1px solid rgba(255,255,255,.04)}}
+        .title{{font-size:20px;font-weight:800;color:#f4f8ff}}
+        .meta{{color:#9fc7ff;margin-top:6px;font-size:13px}}
+        .kpis{{display:flex;gap:12px;margin-top:16px}}
+        .kpi{{flex:1;background:rgba(255,255,255,.03);padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,.03)}}
+        table{{width:100%;border-collapse:collapse;margin-top:12px}}
+        th,td{{padding:8px;border-bottom:1px solid rgba(255,255,255,.03);text-align:left}}
+        .section{{margin-top:18px}}
+        .rec{{background:rgba(255,255,255,.02);padding:8px;border-radius:6px;margin-top:8px}}
+      </style>
+    </head><body>
+    <div class="report-shell">
+      <div class="title">SUPPLYCHAIN NEXUS — Executive Report</div>
+      <div class="meta">Scenario: <strong>{scenario_name}</strong> · Focus: <strong>{focus_region}</strong></div>
+
+      <div class="kpis">
+        <div class="kpi"><div style="font-size:12px;color:#9fc7ff">Avg health</div><div style="font-size:18px;font-weight:700">{scored['warehouse_health_score'].mean():.1f}/100</div></div>
+        <div class="kpi"><div style="font-size:12px;color:#9fc7ff">Total capacity</div><div style="font-size:18px;font-weight:700">{int(scored['total_capacity'].sum()):,} units</div></div>
+        <div class="kpi"><div style="font-size:12px;color:#9fc7ff">Total demand</div><div style="font-size:18px;font-weight:700">{int(scored['total_demand'].sum()):,} units</div></div>
+        <div class="kpi"><div style="font-size:12px;color:#9fc7ff">Green score</div><div style="font-size:18px;font-weight:700">{sus['green_score']:.1f}/100</div></div>
+      </div>
+
+      <div class="section">
+        <h4 style="margin:0 0 8px 0;color:#cfe6ff">Sustainability</h4>
+        <table><tr><th>Metric</th><th>Value</th></tr>
+          <tr><td>Baseline CO₂ (kg)</td><td>{sus['baseline_co2_kg']:.2f}</td></tr>
+          <tr><td>Optimized CO₂ (kg)</td><td>{sus['optimized_co2_kg']:.2f}</td></tr>
+          <tr><td>CO₂ saved (kg)</td><td>{sus['co2_saved_kg']:.2f}</td></tr>
+        </table>
+      </div>
+
+      <div class="section">
+        <h4 style="margin:0 0 8px 0;color:#cfe6ff">AI Recommendations</h4>
+        {''.join([f"<div class='rec'><strong>{escape(r['title'])}</strong><div style='font-size:12px;color:#bcd9ff'>{escape(r['reason'])}</div><div style='font-size:12px;margin-top:6px'><em>Action:</em> {escape(r['action'])} · <strong>{r['confidence']}%</strong></div></div>" for r in recs])}
+      </div>
+
+      <div class="section">
+        <h4 style="margin:0 0 8px 0;color:#cfe6ff">Network scorecard</h4>
+        <table><tr><th>Region</th><th>Health</th><th>Risk</th><th>Utilization</th></tr>
+        {''.join([f"<tr><td>{row['region']}</td><td>{row['warehouse_health_score']:.1f}</td><td>{row['risk_index']:.1f}</td><td>{row['capacity_utilization']*100:.1f}%</td></tr>" for _, row in scored.iterrows()])}
+        </table>
+      </div>
+
+      <div class="section">
+        <h4 style="margin:0 0 8px 0;color:#cfe6ff">Visuals</h4>
+        <div style="margin-top:8px">{risk_html}</div>
+        <div style="margin-top:8px">{geo_html}</div>
+      </div>
+
+      <div style="margin-top:18px;font-size:12px;color:#9fbfe6">Generated by SupplyChain Nexus</div>
+    </div></body></html>
+    """
+    report_html_payload = report_html.encode("utf-8")
+
+    st.markdown(f"""
+    <div class="glass" style="padding:1.1rem 1.2rem; margin-bottom:1rem;">
+      <div style="font-size:.72rem;color:#84a7df;text-transform:uppercase;letter-spacing:.14em;margin-bottom:.45rem;">
+        Executive briefing
+      </div>
+      <div style="font-size:1.15rem;font-weight:700;color:#f4f8ff;">{scenario_name} scenario · {focus_region} focus</div>
+      <div style="color:#b9d2f7;margin-top:.35rem;line-height:1.6;">
+        This report summarizes the recommended warehouse strategy, operational risk, and sustainability outcome for the current scenario.
+      </div>
+    </div>""", unsafe_allow_html=True)
+
     dl1, dl2, dl3 = st.columns(3)
     with dl1:
-        st.markdown("**📊 Data exports**")
+        st.markdown("<div class='section-header'>📊 Data exports</div>", unsafe_allow_html=True)
         st.download_button("📥 Scenario table CSV",
                            optimized.to_csv(index=False).encode("utf-8"),
                            "supplychain_scenario.csv", "text/csv")
@@ -1209,29 +1439,31 @@ def page_export(scored: pd.DataFrame, optimized: pd.DataFrame,
                            "supplychain_features.csv", "text/csv")
 
     with dl2:
-        st.markdown("**📝 Report exports**")
+        st.markdown("<div class='section-header'>📝 Report exports</div>", unsafe_allow_html=True)
+        st.caption("Download a presentation-ready HTML report.")
         st.download_button("📥 Executive report TXT",
                            report_payload,
                            "supplychain_executive_report.txt", "text/plain")
+        st.download_button("📥 Executive report HTML",
+                           report_html_payload,
+                           "supplychain_executive_report.html", "text/html")
 
     with dl3:
-        st.markdown("**📈 Chart exports**")
-        risk_fig = px.scatter(scored, x="avg_distance", y="avg_time",
-                              size="total_demand", color="risk_index",
-                              hover_name="region", color_continuous_scale="Turbo")
-        risk_fig.update_layout(**DARK_LAYOUT)
+        st.markdown("<div class='section-header'>📈 Chart exports</div>", unsafe_allow_html=True)
         st.download_button("📥 Risk chart HTML",
                            risk_fig.to_html(include_plotlyjs="cdn").encode("utf-8"),
                            "risk_chart.html", "text/html")
 
-        geo_fig = build_geo_map(scored, optimized)
         st.download_button("📥 GIS map HTML",
                            geo_fig.to_html(include_plotlyjs="cdn").encode("utf-8"),
                            "gis_map.html", "text/html")
 
     st.markdown("")
-    with st.expander("📋 Preview executive report", expanded=False):
-        st.code("\n".join(report_lines), language="text")
+    with st.expander("📋 Preview executive report", expanded=True):
+        try:
+            st.components.v1.html(report_html, height=700, scrolling=True)
+        except Exception:
+            st.markdown("<pre style='white-space:pre-wrap;color:#dcecff;'>" + "\n".join(report_lines) + "</pre>", unsafe_allow_html=True)
 
 # ─── Main app ────────────────────────────────────────────────────────────────
 
@@ -1270,26 +1502,29 @@ def app() -> None:
     render_hero_and_kpis(scored, optimized, scenario_name, focus_region, presentation_mode)
     st.markdown("---")
 
-    # ── page routing ──
-    clean_page = page.split("  ", 1)[-1].strip() if "  " in page else page.strip()
+    page_title = get_page_title(page)
+    st.markdown(f"<div class='page-badge'>Current view • {page_title}</div>", unsafe_allow_html=True)
 
-    if "Overview" in clean_page:
+    # ── page routing ──
+    page_name = normalize_page_name(page)
+
+    if page_name.startswith("overview"):
         page_overview(scored, optimized, comparison, data)
 
-    elif "Scenario" in clean_page:
+    elif page_name.startswith("scenario"):
         page_scenario(scored, optimized, comparison, scenario_name,
                       focus_region, baseline)
 
-    elif "AI" in clean_page:
+    elif page_name.startswith("ai"):
         page_ai_insights(scored, optimized, scenario_name)
 
-    elif "GIS" in clean_page or "Map" in clean_page:
-        page_gis(scored, optimized)
+    elif page_name.startswith("gis") or page_name.startswith("map"):
+        page_gis(scored, optimized, focus_region)
 
-    elif "Sustainability" in clean_page:
+    elif page_name.startswith("sustainability"):
         page_sustainability(features, optimized)
 
-    elif "Export" in clean_page:
+    elif page_name.startswith("export"):
         page_export(scored, optimized, scenario_name, focus_region, features)
 
 
